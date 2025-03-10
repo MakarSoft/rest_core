@@ -16,19 +16,20 @@ from async_timeout import timeout
 
 from collections.abc import Iterable
 
-from pydantic import BaseModel, ValidationError    
+from pydantic import BaseModel, ValidationError
 
 from typing import (
-    Optional
-    , Union
-    , Type
-    , TypeVar
-    , Mapping
-    #, TracebackType  # 3.10
-    #, Self   # 3.11
+    Optional,
+    Union,
+    Type,
+    TypeVar,
+    Mapping,
+    # , TracebackType  # 3.10
+    # , Self   # 3.11
 )
 
 from project.logger.logger_config import get_logger_config
+
 # import project.schemas
 from project.schemas import Response, BaseResponse, DataType
 
@@ -46,34 +47,32 @@ from project.rest_core.exceptions import (
     JsonFormatError,
     ApiInternalError,
     DataValidationError,
-    DataFormatError
-    
+    DataFormatError,
 )
 
 P = TypeVar("P", bound=BaseModel)
 T = Union[P, list[P]]
 
-logger =  get_logger_config()
+logger = get_logger_config()
+
 
 # ==============================================================================
 # ContentType
 # ==============================================================================
 @dataclass
 class ContentType:
-    """
-    """
-        
+    """ """
+
     main_type: Optional[str]
     sub_types: Optional[tuple[str, str]]
     params: Optional[dict[str, str]]
 
-        
+
 # ====================================================================
 # HTTPClient
 # ====================================================================
 class HTTPClient:
-    """
-    """
+    """ """
 
     # ----------------------------------------------------------------
     # ----------------------------------------------------------------
@@ -84,24 +83,23 @@ class HTTPClient:
         *,
         auth: Optional[Auth] = None,
         headers: Optional[HttpHeaders] = None,
-        payload: Optional[Mapping[str, Union[int, float, str]]] = None
-        
+        payload: Optional[Mapping[str, Union[str, int, float]]] = None,
     ) -> None:
-        
+
         self.url = url
         self.session = session
         self.auth = auth
-        self.headers =  headers or HttpHeaders()
+        self.headers = headers or HttpHeaders()
         self.payload = payload
 
         self.token: Optional[Token] = None
-        
+
     # ----------------------------------------------------------------
     # ----------------------------------------------------------------
     @property
     def token(self) -> Optional[Token]:
-        return self._token 
-    
+        return self._token
+
     @token.setter
     def token(self, token: Optional[Token]) -> None:
         self._token = None
@@ -131,7 +129,9 @@ class HTTPClient:
         if isinstance(self.headers, HttpHeaders):
             if self.token:
                 # сохраняем строковое представление токена...
-                self.headers.set_header_value("Authorization", self.token.token) 
+                self.headers.set_header_value(
+                    "Authorization", self.token.token
+                )
             else:
                 self.clear_auth_head()
 
@@ -139,66 +139,75 @@ class HTTPClient:
     # get_content_type
     # ----------------------------------------------------------------
     def get_content_type(self, res: aiohttp.ClientResponse) -> ContentType:
-        
+
         main_type = sub_types = params = None
 
         if res:
-            header_content_type: Optional[str] = res.headers.get("Content-Type")
+            header_content_type: Optional[str] = res.headers.get(
+                "Content-Type"
+            )
             if header_content_type:
-                items = header_content_type.split(';')
-                
+                items = header_content_type.split(";")
+
                 # анализируем первый элемент
-                main_type, sub_type = map(str.lower, items[0].split('/', 1))
-                sub_types = sub_type.split('+', 1) if '+' in sub_type else (sub_type, '') 
+                main_type, sub_type = map(str.lower, items[0].split("/", 1))
+                sub_types = (
+                    sub_type.split("+", 1)
+                    if "+" in sub_type
+                    else (sub_type, "")
+                )
 
                 # обрабатываем дополнительные параметры...
                 params = dict(
-                    item.split("=", 1) if "=" in item else (item, "") for item in items[1:]
+                    item.split("=", 1) if "=" in item else (item, "")
+                    for item in items[1:]
                 )
-            
+
         return ContentType(main_type, sub_types, params)
-            
+
     # ----------------------------------------------------------------
     # make_request
     # ----------------------------------------------------------------
     async def make_request(
-            self,
-            method: str,
-            url_part: str,
-            *,
-            auth: Optional[aiohttp.BasicAuth] = None,
-            headers: Optional[HttpHeaders] = None,
-            params: Optional[dict[str, str]] = None,
-            payload: Optional[dict[str, Union[str, int, float]]] = None,
-            auth_required: bool = False,
-            request_timeout: Optional[float] = None,
-            response_model: P = None
+        self,
+        method: str,
+        url_part: str,
+        *,
+        auth: Optional[aiohttp.BasicAuth] = None,
+        headers: Optional[HttpHeaders] = None,
+        params: Optional[Mapping[str, str]] = None,
+        payload: Optional[Mapping[str, Union[str, int, float]]] = None,
+        auth_required: bool = False,
+        request_timeout: Optional[float] = None,
+        response_model: P = None,
     ) -> Optional[Response]:
-        '''
-        '''
-        
-        if not headers:
-            headers = self.headers or HttpHeaders()
-        
-        if not payload:
-            # payload = self.payload if self.payload else {}
-            payload = self.payload
+        """ """
 
-        if not params:
-            # params = {}
-            params = None
+        headers = headers or self.headers or HttpHeaders()
+        payload = payload or self.payload
+        params = params or None
+        # if not headers:
+        #     headers = self.headers or HttpHeaders()
+
+        # if not payload:
+        #     # payload = self.payload if self.payload else {}
+        #     payload = self.payload
+
+        # if not params:
+        #     # params = {}
+        #     params = None
 
         if auth_required:
             # требуется токен для авторизации ...
             if self.token and self.token.is_valid():
                 self.set_auth_head()
             else:
-                logger.error('=== нет авторизационных данных  ===\n')
+                logger.error("=== нет авторизационных данных  ===\n")
                 # print('нет авторизационных данных')
                 return None
-        
+
         # Авторизационная информация указанная в заголовке имеет приоритет
-        if 'Authorization' in headers.headers:
+        if "Authorization" in headers.headers:
             auth = None
         else:
             # при отсутствии авторизационной информации в заголовке -
@@ -208,23 +217,21 @@ class HTTPClient:
                 auth = self.auth
 
         if self.url and url_part:
-            url = f'{self.url}/{url_part}'
+            url = f"{self.url}/{url_part}"
         else:
             url = self.url or url_part
         if not url:
             # raise ActionURLMatchError('Невозможно сформировать URL для запрос')
-            logger.error(
-                f'=== URL Match Error  {self.url}; {url_part} ===\n'
-            )
+            logger.error(f"=== URL Match Error  {self.url}; {url_part} ===\n")
             # print('Невозможно сформировать URL для запрос')
             return None
-        
+
         if not request_timeout:
             if self.session.timeout.total:
                 request_timeout = self.session.timeout.total
-            else: 
+            else:
                 request_timeout = TOTAL_TIMEOUT
-            
+
         # все данные собраны - пытаемся выполнить запрос
         try:
             with timeout(request_timeout):
@@ -236,9 +243,9 @@ class HTTPClient:
                     json=payload,
                     params=params,
                     headers=headers.headers,
-                    verify_ssl= False
+                    verify_ssl=False,
                 )
-        
+
         # ---start [обработка ошибок]---
         except asyncio.TimeoutError as exception:
             # таймаут
@@ -248,11 +255,11 @@ class HTTPClient:
             raise HttpClientTimeotError(
                 f"Timeout occured with connecting to {url}"
             ) from exception
-        
+
         # ------------------------------
         except (
             client_exceptions.ClientConnectionError,
-            client_exceptions.ClientConnectorError
+            client_exceptions.ClientConnectorError,
         ) as exception:
             # низкоуровневые проблемы подключения...
             # logger.error(
@@ -261,7 +268,7 @@ class HTTPClient:
             raise HttpClientConnectionError(
                 f"Client connection error, to {url}"
             ) from exception
-        
+
         # ------------------------------
         except client_exceptions.ClientResponseError as exception:
             # исключение возникшее после получения ответа от сервера
@@ -271,16 +278,14 @@ class HTTPClient:
             raise HttpClientResponseError(
                 f"Client response error from {url}"
             ) from exception
-        
+
         # ------------------------------
         except Exception as exception:
             # прочая фигня....
             # logger.error(
             #     f'=== Client ERROR from {url} ==='
             # )
-            raise ApiInternalError(
-                f"Ошибка в приложении"
-            ) from exception
+            raise ApiInternalError(f"Ошибка в приложении") from exception
 
         # --- end [обработка ошибок] ---
 
@@ -296,7 +301,7 @@ class HTTPClient:
             text = await res.text()
             if text:
                 try:
-                    
+
                     # предполагаем json-контент => десериализуем строковое представление в dict
                     data = deserialized_data = j.loads(text)
                     # data = deserialized_data = await res.json()
@@ -308,24 +313,23 @@ class HTTPClient:
 
                 if not response_model:
                     response_model = Response[DataType]
-                    
+
                 try:
 
-                    response =  response_model(
-                        status_code=res.status,
-                        headers=res.headers,
-                        data = data
+                    response = response_model(
+                        status_code=res.status, headers=res.headers, data=data
                     )
-                    
+
                 except ValidationError as exception:
                     # данные не соответствуют модели
-                    raise DataValidationError("Data Validation Error") from exception
-                
+                    raise DataValidationError(
+                        "Data Validation Error"
+                    ) from exception
+
                 except Exception as exception:
                     # Общая ошибка - не должно быть...
                     raise DataFormatError("Data Format Error") from exception
-            
-            
+
             return response
 
     # ----------------------------------------------------------------
@@ -338,28 +342,26 @@ class HTTPClient:
         auth: Optional[aiohttp.BasicAuth] = None,
         payload: Optional[dict[str, Union[str, int]]] = None,
         params: Optional[dict[str, str]] = None,
-        auth_required: bool = False
+        auth_required: bool = False,
     ) -> Response:
-        ''''''
-        
+        """"""
+
         try:
             ret = await self.make_request(
-                method='GET',
+                method="GET",
                 url_part=url_part,
                 auth=auth,
                 payload=payload,
                 params=params,
                 auth_required=auth_required,
-                response_model=response_model
+                response_model=response_model,
             )
         except Exception as exception:
-            logger.error(
-                f'=== Client get ===\n   details:\n{exception}\n\n'
-            )
-            raise(exception)
+            logger.error(f"=== Client get ===\n   details:\n{exception}\n\n")
+            raise (exception)
 
         return ret
-        
+
     # ----------------------------------------------------------------
     # ----------------------------------------------------------------
     async def post(
@@ -370,48 +372,43 @@ class HTTPClient:
         auth: Optional[aiohttp.BasicAuth] = None,
         payload: Optional[dict[str, Union[str, int]]] = None,
         params: Optional[dict[str, str]] = None,
-        auth_required: bool = False
+        auth_required: bool = False,
     ) -> Response:
-        ''''''
-        try:        
+        """"""
+        try:
             ret = await self.make_request(
-                method='POST',
+                method="POST",
                 url_part=url_part,
                 auth=auth,
                 payload=payload,
                 params=params,
-                auth_required=auth_required, 
-                response_model=response_model
+                auth_required=auth_required,
+                response_model=response_model,
             )
         except Exception as exception:
-            logger.error(
-                f'=== Client post ===\n   details:\n{exception}\n\n'
-            )
-            raise(exception)
+            logger.error(f"=== Client post ===\n   details:\n{exception}\n\n")
+            raise (exception)
         return ret
 
     # ----------------------------------------------------------------
     # ----------------------------------------------------------------
     async def close_session(self):
-        '''
-        '''
-        
+        """ """
+
         await self.session.close()
-        
+
     # ----------------------------------------------------------------
     # ----------------------------------------------------------------
     async def __aenter__(self) -> HTTPClient:
-        '''
-        '''
-        
+        """ """
+
         return self
 
     # ----------------------------------------------------------------
     # ----------------------------------------------------------------
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        '''
-        '''
-        
+        """ """
+
         # await self.close_session()
         pass
 
@@ -429,7 +426,6 @@ class HTTPClient:
     # ----------------------------------------------------------------
     # ----------------------------------------------------------------
     def __str__(self) -> str:
-        '''
-        '''
-        
+        """ """
+
         return f"{self.__class__.__name__}<token={self._api_token}>"

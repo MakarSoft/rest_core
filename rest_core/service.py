@@ -13,7 +13,6 @@ P = TypeVar("P", bound=BaseModel)
 T = Union[P, list[P]]
 
 
-
 class Service:
     '''
     Коллекция ресурсов сервиса
