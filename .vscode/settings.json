@@ -1,0 +1,91 @@
+{
+    "window.zoomLevel": 1,
+    "editor.mouseWheelZoom": true,
+
+    "workbench.startupEditor": "newUntitledFile",
+    "workbench.tips.enabled": false,
+    "workbench.editor.empty.hint": "hidden",
+    
+    "workbench.iconTheme": "bearded-icons",
+    "material-icon-theme.hidesExplorerArrows": true,
+
+    "workbench.tree.renderIndentGuides": "none",
+    "workbench.sideBar.location": "right",
+    "workbench.activityBar.location": "default",
+    "workbench.activityBar.iconClickBehavior": "focus",
+    "workbench.statusBar.visible": true,
+    "workbench.editor.showTabs": "multiple",
+    "workbench.layoutControl.enabled": false,
+    "workbench.editor.tabSizing": "shrink",
+
+    "workbench.colorCustomizations": {
+        "tab.hoverBorder": "#5b5c3f",
+        "tab.activeBorder": "#02bc3d",
+        // "editorSuggestWidget.selectedBackground": "#231739",
+        // "sideBar.background": "#140E1A",
+        // "list.activeSelectionBackground": "#231739",
+        // "list.inactiveSelectionBackground": "#231739",
+        // "list.focusBackground": "#231739",
+        // "list.hoverBackground": "#231739"
+    },
+
+    // Cursor
+    "editor.cursorBlinking": "expand",
+    "editor.cursorSmoothCaretAnimation": "explicit",
+    // "editor.cursorSmoothCaretAnimation": "on",
+    "editor.cursorStyle": "line-thin",
+
+    // Font
+    "editor.fontSize": 16,
+    "editor.lineHeight": 1.3,
+    "editor.fontLigatures": true,
+    "editor.fontFamily": "JetBrains Mono",
+    "editor.inlayHints.fontFamily": "PragmataPro",
+    "editor.rulers": [89, 100],
+
+    "editor.minimap.enabled": false,
+    "editor.guides.indentation": true,
+    "editor.renderWhitespace": "all",
+    "editor.renderLineHighlight": "gutter",
+    "editor.matchBrackets": "always",
+    "editor.lightbulb.enabled": "onCode",
+    "editor.hover.enabled": true,
+
+    "editor.showFoldingControls": "always",
+
+    "editor.scrollbar.horizontal": "auto",
+    "editor.scrollbar.horizontalScrollbarSize": 10,
+    "editor.scrollbar.vertical": "hidden",
+    "editor.hideCursorInOverviewRuler": false,
+    "editor.overviewRulerBorder": false,
+    "editor.tabSize": 4,
+    "editor.detectIndentation": true,
+
+    // "breadcrumbs.enabled": false,
+    "explorer.confirmDragAndDrop": false,
+    "explorer.confirmDelete": false,
+    "explorer.compactFolders": false,
+    "files.insertFinalNewline": true,
+    "extensions.ignoreRecommendations": true,
+    "files.autoSave": "afterDelay",
+
+    "editor.folding": false,
+    "editor.insertSpaces": true,
+    "editor.smoothScrolling": true,
+    "editor.suggestSelection": "first",
+    "editor.multiCursorModifier": "ctrlCmd",
+
+    // Wrapping
+    "editor.wordWrap": "bounded",
+    "editor.wrappingIndent": "same",
+    "editor.wordWrapColumn": 80,
+
+    "editor.scrollBeyondLastLine": true,
+
+    //Terminal
+    "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font",
+    "terminal.integrated.fontSize": 16,
+    "terminal.integrated.lineHeight": 1.5,
+    "terminal.integrated.tabs.enabled": true,
+}
+

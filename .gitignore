@@ -1,11 +1,14 @@
 # ------------------
-.vscode
-
-logs/**/*
-!logs/.gitkeep
+#.vscode
 
 data/**/*
 !data/.gitkeep
+
+docs/**/*
+!data/.gitkeep
+
+logs/**/*
+!logs/.gitkeep
 
 test/**/*
 !test/.gitkeep
