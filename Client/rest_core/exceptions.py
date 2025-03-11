@@ -70,7 +70,7 @@ class ApiAuthFormatError(Exception):
     pass
 
 
-class ApiPasswordFormatError(Exception):
+class ApiAuthValueFormatError(Exception):
     pass
 
 

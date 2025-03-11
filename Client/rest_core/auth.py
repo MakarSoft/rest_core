@@ -9,12 +9,7 @@ import typing
 from collections import namedtuple
 from typing import Optional, Union, Literal, get_args
 
-
-from .exceptions import (
-    ApiUsernameFormatError,
-    ApiPasswordFormatError,
-    ApiEncodingFormatError,
-)
+from .exceptions import ApiEncodingFormatError, ApiAuthValueFormatError
 
 
 AllowedEncoding = Literal["ascii", "latin1"]
@@ -25,7 +20,8 @@ TAuth = namedtuple("TAuth", ["login", "password", "encoding"])
 # Auth
 # ====================================================================
 class Auth:
-    """ """
+    """
+    """
 
     def __init__(
         self,
@@ -119,30 +115,12 @@ class Auth:
         """
 
         if value and not value.isascii():
-            raise ApiUsernameFormatError(
-                f'Auth: Допустимо применение только ASCII-символов в {field_name}, значение = "{value}"'
+            raise ApiAuthValueFormatError(
+                f"Auth: Допустимо применение только ASCII-символов в "
+                f'{field_name}, значение = "{value}"'
             )
 
     # ----------------------------------------------------------------
-    @staticmethod
-    def _native_string(
-        string_obj: Union[str, bytes, bytearray],
-        encoding: Optional[AllowedEncoding] = "ascii",
-    ) -> Optional[str]:
-        """
-        Преобразует строку в соответствии с заданным кодированием.
-        """
-
-        if isinstance(string_obj, str):
-            return (
-                string_obj
-                if encoding == sys.getdefaultencoding()
-                else string_obj.encode().decode(encoding, errors="ignore")
-            )
-        elif isinstance(string_obj, (bytes, bytearray)):
-            return string_obj.decode(encoding)
-        return None
-
     @staticmethod
     def _native_string(
         string_obj: Union[str, bytes, bytearray],
@@ -153,9 +131,11 @@ class Auth:
         """
 
         # Проверяем на допустимость значения encoding
-        if encoding not in get_args(AllowedEncoding):
+        valid_encodings = get_args(AllowedEncoding)
+        if encoding not in valid_encodings:
             raise ValueError(
-                f"Недопустимое значение encoding: {encoding}. Допустимые значения: {valid_encodings}."
+                f"Недопустимое значение encoding: {encoding}. "
+                f"Допустимые значения: {valid_encodings}."
             )
 
         if isinstance(string_obj, str):
